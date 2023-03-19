@@ -8,6 +8,6 @@ class Packet{
         void Get_Ethernet_Frame(uint_8 *buf);
         uint_8 source_mac[6];
         uint_8 dest_mac[6];
-        uint_16 protocol;
+        uint_16 eth_proto;
     private:
 };

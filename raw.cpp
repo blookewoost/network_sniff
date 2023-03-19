@@ -16,40 +16,83 @@
 #define IPv4_PROTO 0x800
 #define IPv6_PROTO 0x86dd
 
+
 std::ofstream ipv4_writer("ipv4.txt", std::fstream::app);
 
-void write_ipv4(IPv4 ipv4_packet, int packet_num) {
+
+// Write the source and destination MAC addresses to file.
+void write_mac_address(Packet packet, std::ofstream& writer){ // Need reference to the writer stream's buffer.
+
+    int i;
+
+    writer << "SOURCE_MAC: ";
+
+    for (i=1;i<=sizeof(packet.source_mac);i++) { // Write the source MAC address in hexadecimal, padded with zeroes
+        writer << std::setfill('0') << std::setw(2) << std::hex << (int)packet.source_mac[i-1];
+        if (i<(sizeof(packet.source_mac))) {
+            writer << ":";
+        }
+    }
+
+    writer << "\n";
+
+    writer << "DEST_MAC: ";
+
+    for (i=1;i<=sizeof(packet.dest_mac);i++) { // Write the destination MAC address in hexadecimal, padded with zeroes
+        writer << std::setfill('0') << std::setw(2) << std::hex << (int)packet.dest_mac[i-1];
+        if (i<(sizeof(packet.dest_mac))) {
+            writer << ":";
+        }
+    }
+
+    writer << "\n";
+
+}
+
+// Write relevant IPv4 packet information to file.
+void write_ipv4(IPv4 ipv4_packet) {
+
+    #ifndef UDP
+        #define UDP 0x11
+    #endif
+
+    #ifndef TCP
+        #define TCP 0x6
+    #endif    
 
     if(ipv4_writer.is_open()){
-        ipv4_writer << "BEGIN_PACKET:" << packet_num << "\n";
+        
+        ipv4_writer << "BEGIN_PACKET\n";
+        write_mac_address(ipv4_packet, ipv4_writer);
+
+        ipv4_writer << "SOURCE_IP: " << ipv4_packet.source_ip << "\n"
+                    << "DEST_IP: " << ipv4_packet.dest_ip << "\n";
+                    
+        switch (ipv4_packet.protocol) {
+            case UDP:
+                ipv4_writer << "IP_PROTO: UDP\n";
+                break;
+            case TCP:
+                ipv4_writer << "IP_PROTO: TCP\n";
+                break;
+            default:
+                ipv4_writer << "IP_PROTO_UNRECOGNIZED: " << ipv4_packet.protocol << "\n";
+                break;
+        }
+        
+        ipv4_writer << "END_PACKET\n";
         ipv4_writer.flush(); // needed the flush.. data was not being written
+
     } else {
+
         std::cerr << "The log file could not be opened!";
     }
     
 }
 
-void breakdown_ipv4(unsigned char * buf) {
-
-    struct iphdr *ip = (struct iphdr*) (buf + sizeof(struct ethhdr));
-
-    struct sockaddr_in source; // Store IP addresses in sockaddr, so that we can use inet functions to extract a readable IP.
-    source.sin_addr.s_addr = ip->saddr;
-
-    struct sockaddr_in dest;
-    dest.sin_addr.s_addr = ip->daddr;
-
-    printf("Source IP Adress: %s\n", inet_ntoa(source.sin_addr));
-    printf("Destination IP Adress: %s\n", inet_ntoa(dest.sin_addr));
-    printf("Protocol: %d\n", (unsigned int)ip->protocol);
-
-    //breakdown the IPv4 header.. https://en.wikipedia.org/wiki/Internet_Protocol_version_4#Header
-
-}
-
 // Check the Ethernet Protocol of the received packet.
 // Analyze each type of packet separately. This will be fun later...
-void ether_switch(unsigned char * buf, int packet_num) {
+void ether_switch(unsigned char * buf) {
 
     struct ethhdr *eth = (struct ethhdr *)(buf);
     
@@ -66,7 +109,7 @@ void ether_switch(unsigned char * buf, int packet_num) {
 
             std::cout << "Found an IPv4 packet! Let's break this down.\n";
             IPv4 ipv4packet = IPv4(buf);
-            write_ipv4(ipv4packet, packet_num);
+            write_ipv4(ipv4packet);
         }
         break;
 
@@ -84,7 +127,7 @@ void ether_switch(unsigned char * buf, int packet_num) {
 }
 
 // Open a raw socket and begin listening for packets.
-// NOTE: This currently reads one packet and stops listening.
+// NOTE: This currently reads 10000 packets and stops listening.
 int main() {
     
     int sock = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL)); // raw socket
@@ -98,8 +141,6 @@ int main() {
     struct sockaddr saddr;
     int s_addr_len = sizeof(saddr);
 
-    //initialize_writers(); // Get ready to log data.
-
     bool listening = true;
     int packet_num = 0;
 
@@ -112,10 +153,11 @@ int main() {
             printf("Call to recvfrom failed with error %d", errno);
         }
         
-        ether_switch(buf, packet_num);
+        ether_switch(buf);
 
-        if (packet_num>10000) {
+        if (packet_num>9999) {
             listening = false;
+            return 0;
             //cleanup_writers(); // Close all of the file streams
         }
     }
