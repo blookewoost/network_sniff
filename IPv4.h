@@ -6,7 +6,7 @@ class IPv4 : public Packet {
         IPv4(uint_8 *buf);
         char * source_ip;
         char * dest_ip;
-        unsigned int protocol;
+        unsigned int ip_protocol;
     private:
         void Extract_IP_Header(uint_8 *buf);
         

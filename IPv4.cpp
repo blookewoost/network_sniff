@@ -25,7 +25,7 @@ void IPv4::Extract_IP_Header(uint_8 *buf) {
 
     IPv4::source_ip = inet_ntoa(source.sin_addr);
     IPv4::dest_ip = inet_ntoa(dest.sin_addr);
-    IPv4::protocol = (unsigned int)ip->protocol;
+    IPv4::ip_protocol = (unsigned int)ip->protocol;
 
 }
 
