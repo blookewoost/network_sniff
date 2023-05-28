@@ -1,5 +1,5 @@
-#include "raw_lib.h"
 #include "IPv4.h"
+#include "IPv6.h"
 #include <stdio.h>
 #include <iostream>
 #include <fstream>
@@ -7,12 +7,14 @@
 #include <sys/socket.h>
 #include <linux/if_ether.h>
 #include <linux/ip.h>
+#include <linux/ipv6.h>
 #include <arpa/inet.h>
 #include <errno.h>
 #include <cstdlib>
 #include <iomanip>
 
 std::ofstream ipv4_writer("ipv4.txt", std::fstream::app);
+std::ofstream ipv6_writer("ipv6.txt", std::fstream::app);
 
 // Write the source and destination MAC addresses to file.
 void write_mac_address(Packet packet, std::ofstream& writer){ // Need reference to the writer stream's buffer.
@@ -88,6 +90,27 @@ void write_ipv4(IPv4 ipv4_packet) {
     
 }
 
+// Write the relevant IPv6 packet information to a file
+void write_ipv6(IPv6 ipv6_packet){
+
+    if (ipv6_writer.is_open()) {
+
+        ipv6_writer << "BEGIN_PACKET\n";
+        write_mac_address(ipv6_packet, ipv6_writer);
+
+        ipv6_writer << "SOURCE_IP: " << ipv6_packet.source_addr << "\n"
+                    << "DEST_IP: " << ipv6_packet.dest_addr << "\n";
+
+        ipv6_writer << "END_PACKET\n";
+        ipv6_writer.flush();
+
+    } else {
+
+        std::cerr << "The log file could not be opened!";
+    }
+
+}
+
 // Check the Ethernet Protocol of the received packet.
 // Analyze each type of packet separately. This will be fun later...
 void ether_switch(unsigned char * buf) {
@@ -131,7 +154,8 @@ void ether_switch(unsigned char * buf) {
 
         case IPv6_P: {
 
-            // TODO IPv6 ipv6packet = IPv6(buf);
+            IPv6 ipv6packet = IPv6(buf);
+            write_ipv6(ipv6packet);
         }  
         break;
 

@@ -1,9 +1,13 @@
 CC = g++
 CFLAGS = -O
 
-raw.o: raw.cpp Packet.cpp Packet.h IPv4.cpp IPv4.h
-	$(CC) $(CFLAGS) raw.cpp IPv4.cpp Packet.cpp -o raw
+SRC_FILES = $(wildcard *.cpp)
+TXT_FILES = $(wildcard *.txt)
+OBJ_FILES = $(wildcard *.o)
+
+raw.o: $(SRC_FILES) $(HDR_FILES)
+	$(CC) $(CFLAGS) $^ -o $@
 
 .PHONY: clean
 clean:
-	sudo rm raw ipv4.txt
+	sudo rm $(OBJ_FILES) $(TXT_FILES)
