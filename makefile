@@ -5,7 +5,7 @@ SRC_FILES = $(wildcard *.cpp)
 TXT_FILES = $(wildcard *.txt)
 OBJ_FILES = $(wildcard *.o)
 
-raw.o: $(SRC_FILES) 
+raw.o: $(SRC_FILES) $(HDR_FILES)
 	$(CC) $(CFLAGS) $^ -o $@
 
 .PHONY: clean
