@@ -1,5 +1,5 @@
-#include "IPv4.h"
-#include "IPv6.h"
+#include "../protocols/IPv4.h"
+#include "../protocols/IPv6.h"
 #include <stdio.h>
 #include <iostream>
 #include <fstream>
