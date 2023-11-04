@@ -7,7 +7,7 @@ PROTO_DIR = ../protocols
 SRC = $(SRC_DIR)/Packet.cpp $(SRC_DIR)/raw.cpp
 PROTO = $(PROTO_DIR)/IPv4.cpp $(PROTO_DIR)/IPv6.cpp
 
-TXT_FILES = $(wildcard *.txt)
+TXT_FILES = $(wildcard ../*.txt)
 OBJ_FILES = $(wildcard *.o)
 
 raw.o: $(SRC) $(PROTO)

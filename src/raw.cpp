@@ -13,8 +13,8 @@
 #include <cstdlib>
 #include <iomanip>
 
-std::ofstream ipv4_writer("ipv4.txt", std::fstream::app);
-std::ofstream ipv6_writer("ipv6.txt", std::fstream::app);
+std::ofstream ipv4_writer("../ipv4.txt", std::fstream::app);
+std::ofstream ipv6_writer("../ipv6.txt", std::fstream::app);
 
 // Write the source and destination MAC addresses to file.
 void write_mac_address(Packet packet, std::ofstream& writer){ // Need reference to the writer stream's buffer.
@@ -173,14 +173,14 @@ void ether_switch(unsigned char * buf) {
 
 // Open a raw socket and begin listening for packets.
 // NOTE: This currently reads 200 packets and stops listening.
-int main() {
+int main(int argc, char* argv[]) {
 
-    printf("Listening for packets...\n");
-    
+    int num = 0;
     int sock = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL)); // raw socket
 
     if (sock<0) { // An error occured while creating the socket
         printf("Socket creation failed with error %d", errno);
+        return -1;
     }
 
     unsigned char buf[1024];
@@ -188,28 +188,38 @@ int main() {
     struct sockaddr saddr;
     int s_addr_len = sizeof(saddr);
 
+    if (argc>1) {
+        num = atoi(argv[1]);
+        printf("Listening for %d packets. \n", num);
+    } else {
+        printf("Please supply the number of packets to listen for as an argument. \n");
+        return -1;
+    }
+
     bool listening = true;
     int packet_num = 0;
 
     while (listening) {
 
-        packet_num += 1;
         int read = recvfrom(sock, buf, 1024, 0, &saddr, (socklen_t *)&s_addr_len); // read bytes on the wire
 
         if (read<0) { // Something didn't work...
             printf("Call to recvfrom failed with error %d\n", errno);
-        }
-        
-        ether_switch(buf);
+            return -1;
+        } else if (read>0) {
+            // Let's only count packets of nonzero length ;)
+            packet_num += 1;
+            ether_switch(buf);
 
-        if (packet_num%25 == 0) {
-            printf("%d packets read...\n", packet_num);
-        }
+            if (packet_num%25 == 0) {
+                printf("%d packets read...\n", packet_num);
+            }
 
-        if (packet_num>200) {
-            listening = false;
-            return 0;
-            //cleanup_writers(); // Close all of the file streams
+            if (packet_num>=num) {
+                listening = false;
+                return 0;
+                //cleanup_writers(); // Close all of the file streams
+            }
         }
     }
 }
