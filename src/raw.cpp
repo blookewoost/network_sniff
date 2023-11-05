@@ -1,5 +1,3 @@
-#include "../protocols/IPv4.h"
-#include "../protocols/IPv6.h"
 #include <stdio.h>
 #include <iostream>
 #include <fstream>
@@ -12,167 +10,41 @@
 #include <errno.h>
 #include <cstdlib>
 #include <iomanip>
+#include <filesystem>
+#include "lib.h"
+#include "defines.h"
 
-std::ofstream ipv4_writer("../ipv4.txt", std::fstream::app);
-std::ofstream ipv6_writer("../ipv6.txt", std::fstream::app);
+#define ipv4_file "../data/ipv4.json"
+#define ipv6_file "../data/ipv6.json"
 
-// Write the source and destination MAC addresses to file.
-void write_mac_address(Packet packet, std::ofstream& writer){ // Need reference to the writer stream's buffer.
+// Open an output file stream for writing json
+std::ofstream initialize_writer(std::string filepath){
 
-    int i;
-
-    writer << "SOURCE_MAC: ";
-
-    for (i=1;i<=sizeof(packet.source_mac);i++) { // Write the source MAC address in hexadecimal, padded with zeroes
-        writer << std::setfill('0') << std::setw(2) << std::hex << (int)packet.source_mac[i-1];
-        if (i<(sizeof(packet.source_mac))) {
-            writer << ":";
-        }
-    }
-
-    writer << "\n";
-
-    writer << "DEST_MAC: ";
-
-    for (i=1;i<=sizeof(packet.dest_mac);i++) { // Write the destination MAC address in hexadecimal, padded with zeroes
-        writer << std::setfill('0') << std::setw(2) << std::hex << (int)packet.dest_mac[i-1];
-        if (i<(sizeof(packet.dest_mac))) {
-            writer << ":";
-        }
-    }
-
-    writer << "\n";
-
-}
-
-// Write relevant IPv4 packet information to file.
-void write_ipv4(IPv4 ipv4_packet) {
-
-#pragma region // IPv4 Protocol Definitions
-
-    #ifndef UDP
-        #define UDP 0x11
-    #endif
-
-    #ifndef TCP
-        #define TCP 0x6
-    #endif  
-
-#pragma endregion  
-
-    if(ipv4_writer.is_open()){
-        
-        ipv4_writer << "BEGIN_PACKET\n";
-        write_mac_address(ipv4_packet, ipv4_writer);
-
-        ipv4_writer << "SOURCE_IP: " << ipv4_packet.source_ip << "\n"
-                    << "DEST_IP: " << ipv4_packet.dest_ip << "\n";
-                    
-        switch (ipv4_packet.ip_protocol) {
-            case UDP:
-                ipv4_writer << "IP_PROTO: UDP\n";
-                break;
-            case TCP:
-                ipv4_writer << "IP_PROTO: TCP\n";
-                break;
-            default:
-                ipv4_writer << "IP_PROTO_UNRECOGNIZED: " << ipv4_packet.ip_protocol << "\n";
-                break;
-        }
-        
-        ipv4_writer << "END_PACKET\n";
-        ipv4_writer.flush(); // needed the flush.. data was not being written
-
+    std::ofstream writer = std::ofstream(filepath, std::fstream::app);
+    if (writer.is_open()) {
+        writer << "{";
+        writer.flush();
     } else {
-
-        std::cerr << "The log file could not be opened!";
+        std::cerr << "Failed to open a file stream for: " << filepath << "\n";
     }
+
+    return writer;
     
 }
 
-// Write the relevant IPv6 packet information to a file
-void write_ipv6(IPv6 ipv6_packet){
-
-    if (ipv6_writer.is_open()) {
-
-        ipv6_writer << "BEGIN_PACKET\n";
-        write_mac_address(ipv6_packet, ipv6_writer);
-
-        ipv6_writer << "SOURCE_IP: " << ipv6_packet.source_addr << "\n"
-                    << "DEST_IP: " << ipv6_packet.dest_addr << "\n";
-
-        ipv6_writer << "END_PACKET\n";
-        ipv6_writer.flush();
-
+// Close output file stream for writing json
+void finalize_writer(std::ofstream& writer) {
+    if (writer.is_open()) {
+        writer << "}";
+        writer.flush();
+        writer.close();
     } else {
-
-        std::cerr << "The log file could not be opened!";
-    }
-
-}
-
-// Check the Ethernet Protocol of the received packet.
-// Analyze each type of packet separately. This will be fun later...
-void ether_switch(unsigned char * buf) {
-
-#pragma region // Ethernet Protocol Definitions
-
-    #ifndef ATT_P
-        #define ATT_P 0x7373
-    #endif
-
-    #ifndef IPv4_P
-        #define IPv4_P 0x0800
-    #endif
-
-    #ifndef IPv6_P
-        #define IPv6_P 0x86dd
-    #endif
-
-    #ifndef ARP_P
-        #define ARP_P 0x0806
-    #endif
-
-#pragma endregion
-
-    struct ethhdr *eth = (struct ethhdr *)(buf);
-    
-    switch(ntohs(eth->h_proto)) {
-
-        case ATT_P: {
-
-            //TODO Att attpacket = Att(buf);
-        }
-        break;
-
-        case IPv4_P: {
-
-            IPv4 ipv4packet = IPv4(buf);
-            write_ipv4(ipv4packet);
-        }
-        break;
-
-        case IPv6_P: {
-
-            IPv6 ipv6packet = IPv6(buf);
-            write_ipv6(ipv6packet);
-        }  
-        break;
-
-        case ARP_P: {
-
-            //TODO Arp arppacket = Arp(buf);
-        }
-        break;
-
-        default:
-            std::cout << "Unidentified Ethernet protocol encountered! " << std::hex << ntohs(eth->h_proto) << "\n";
-
+        std::cerr << "Filestream was unexpectedly closed prior to finalization!\n";
     }
 }
+
 
 // Open a raw socket and begin listening for packets.
-// NOTE: This currently reads 200 packets and stops listening.
 int main(int argc, char* argv[]) {
 
     int num = 0;
@@ -196,8 +68,15 @@ int main(int argc, char* argv[]) {
         return -1;
     }
 
+    // Get ready to log packets
+    std::ofstream ipv4_writer = initialize_writer(ipv4_file);
+    std::ofstream ipv6_writer = initialize_writer(ipv6_file);
+
     bool listening = true;
-    int packet_num = 0;
+    
+    unsigned int ipv4_packet_num = 0;
+    unsigned int ipv6_packet_num = 0;
+    unsigned int total_packets = 0;
 
     while (listening) {
 
@@ -206,20 +85,34 @@ int main(int argc, char* argv[]) {
         if (read<0) { // Something didn't work...
             printf("Call to recvfrom failed with error %d\n", errno);
             return -1;
-        } else if (read>0) {
-            // Let's only count packets of nonzero length ;)
-            packet_num += 1;
-            ether_switch(buf);
 
-            if (packet_num%25 == 0) {
-                printf("%d packets read...\n", packet_num);
+        } else if (read>0) {
+
+            total_packets += 1;
+            struct ethhdr *eth = (struct ethhdr *)(buf);
+            int proto = ntohs(eth->h_proto);
+
+            switch(proto) {
+                case IPv4_P:
+                    ipv4_packet_num += 1;
+                    jsonify_ipv4(buf, ipv4_packet_num, ipv4_writer);
+                case IPv6_P:
+                    ipv6_packet_num += 1;
+                    jsonify_ipv6(buf, ipv6_packet_num, ipv6_writer);
             }
 
-            if (packet_num>=num) {
+            if (total_packets%25 == 0) {
+                printf("%d packets read...\n", total_packets);
+            }
+
+            if (total_packets>=num) {
                 listening = false;
-                return 0;
-                //cleanup_writers(); // Close all of the file streams
             }
         }
     }
+
+    finalize_writer(ipv4_writer);
+    finalize_writer(ipv6_writer);
+
+    return 0;
 }

@@ -9,5 +9,4 @@ void Packet::Get_Ethernet_Frame(uint_8 *buf){
         std::memcpy(Packet::dest_mac, eth->h_dest, sizeof(eth->h_dest));
         Packet::eth_proto = eth->h_proto;
     }
-
 }
