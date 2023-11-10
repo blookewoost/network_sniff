@@ -26,7 +26,7 @@ void jsonify_mac(Packet packet, std::ofstream& writer, int packet_num){ // Need 
     writer << "\",\n";
 }
 
-void jsonify_ipv4(IPv4 ipv4_packet, int packet_num, std::ofstream &writer) {
+void jsonify_ipv4(IPv4 ipv4_packet, unsigned int packet_num, std::ofstream &writer) {
 
 
     if(writer.is_open()){
@@ -35,7 +35,7 @@ void jsonify_ipv4(IPv4 ipv4_packet, int packet_num, std::ofstream &writer) {
             writer << ",";
         }
 
-        writer << "\n\t\""  << (unsigned int)packet_num << "\":{\n";
+        writer << "\n\t\""  << std::dec << packet_num << "\":{\n";
 
         jsonify_mac(ipv4_packet, writer, packet_num);        
         writer << "\t\t\"proto\":\"" << ipv4_packet.ip_protocol << "\",\n";
@@ -53,7 +53,7 @@ void jsonify_ipv4(IPv4 ipv4_packet, int packet_num, std::ofstream &writer) {
 }
 
 // Write the relevant IPv6 packet information to a file
-void jsonify_ipv6(IPv6 ipv6_packet, int packet_num, std::ofstream &writer){
+void jsonify_ipv6(IPv6 ipv6_packet, unsigned int packet_num, std::ofstream &writer){
 
     if (writer.is_open()) {
 
@@ -61,7 +61,7 @@ void jsonify_ipv6(IPv6 ipv6_packet, int packet_num, std::ofstream &writer){
             writer << ",";
         }
 
-        writer << "\n\t\""  << (unsigned int)packet_num << "\":{\n";
+        writer << "\n\t\""  << packet_num << "\":{\n";
 
         jsonify_mac(ipv6_packet, writer, packet_num);
 

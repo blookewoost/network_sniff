@@ -1,5 +1,5 @@
 CC = g++
-CFLAGS = -O
+CFLAGS = -std=c++20 -O
 
 SRC_DIR = ../src
 PROTO_DIR = ../protocols
@@ -7,7 +7,7 @@ PROTO_DIR = ../protocols
 SRC = $(SRC_DIR)/Packet.cpp $(SRC_DIR)/raw.cpp $(SRC_DIR)/lib.cpp
 PROTO = $(PROTO_DIR)/IPv4.cpp $(PROTO_DIR)/IPv6.cpp
 
-TXT_FILES = $(wildcard ../data/*.json)
+JSON_FILES = $(wildcard ../data/*.json)
 OBJ_FILES = $(wildcard *.o)
 
 raw.o: $(SRC) $(PROTO)
@@ -15,4 +15,4 @@ raw.o: $(SRC) $(PROTO)
 
 .PHONY: clean
 clean:
-	sudo rm $(OBJ_FILES) $(TXT_FILES)
+	sudo rm $(OBJ_FILES) $(JSON_FILES)
