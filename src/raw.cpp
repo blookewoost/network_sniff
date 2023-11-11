@@ -13,19 +13,21 @@
 #include <filesystem>
 #include "lib.h"
 #include "defines.h"
+#include "../include/json/single_include/nlohmann/json.hpp"
 
 #define ipv4_file "../data/ipv4.json"
 #define ipv6_file "../data/ipv6.json"
+#define outfile "../data/out.json"
+
+using nlohmann::json;
 
 // Open an output file stream for writing json
 std::ofstream initialize_writer(std::string filepath){
 
     std::ofstream writer = std::ofstream(filepath, std::fstream::app);
-    if (writer.is_open()) {
-        writer << "{";
-        writer.flush();
-    } else {
-        std::cerr << "Failed to open a file stream for: " << filepath << "\n";
+    if (!writer){
+        // Something bad happened
+        std::cerr << "Filestream could not be opened!\n";
     }
 
     return writer;
@@ -35,7 +37,6 @@ std::ofstream initialize_writer(std::string filepath){
 // Close output file stream for writing json
 void finalize_writer(std::ofstream& writer) {
     if (writer.is_open()) {
-        writer << "}";
         writer.flush();
         writer.close();
     } else {
@@ -69,14 +70,12 @@ int main(int argc, char* argv[]) {
     }
 
     // Get ready to log packets
-    std::ofstream ipv4_writer = initialize_writer(ipv4_file);
-    std::ofstream ipv6_writer = initialize_writer(ipv6_file);
+    std::ofstream writer = initialize_writer(outfile);
 
     bool listening = true;
-    
-    unsigned int ipv4_packet_num = 0;
-    unsigned int ipv6_packet_num = 0;
     unsigned int total_packets = 0;
+
+    json data;
 
     while (listening) {
 
@@ -92,15 +91,19 @@ int main(int argc, char* argv[]) {
             struct ethhdr *eth = (struct ethhdr *)(buf);
             int proto = ntohs(eth->h_proto);
 
+            json packet_info = jsonify_eth(buf, total_packets);
+            
             switch(proto) {
                 case IPv4_P:
-                    ipv4_packet_num += 1;
-                    jsonify_ipv4(buf, ipv4_packet_num, ipv4_writer);
+                    packet_info.update(jsonify_ipv4(buf));
                 case IPv6_P:
-                    ipv6_packet_num += 1;
-                    jsonify_ipv6(buf, ipv6_packet_num, ipv6_writer);
+                    packet_info.update(jsonify_ipv6(buf));
             }
 
+            if (!packet_info.empty()){
+                data += packet_info;
+            }
+            
             if (total_packets%25 == 0) {
                 printf("%d packets read...\n", total_packets);
             }
@@ -108,11 +111,12 @@ int main(int argc, char* argv[]) {
             if (total_packets>=num) {
                 listening = false;
             }
+            packet_info.clear();
         }
     }
 
-    finalize_writer(ipv4_writer);
-    finalize_writer(ipv6_writer);
+    writer << data.dump(2);
+    finalize_writer(writer);
 
     return 0;
 }

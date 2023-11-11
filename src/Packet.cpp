@@ -2,6 +2,14 @@
 #include <linux/if_ether.h>
 #include <cstring>
 
+Packet::Packet() {
+    
+}
+
+Packet::Packet(uint_8 *buf) {
+    Packet::Get_Ethernet_Frame(buf);
+}
+
 void Packet::Get_Ethernet_Frame(uint_8 *buf){
     struct ethhdr *eth = (struct ethhdr*) buf;
     if (eth) {
