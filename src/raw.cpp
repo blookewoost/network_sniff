@@ -15,8 +15,6 @@
 #include "defines.h"
 #include "../include/json/single_include/nlohmann/json.hpp"
 
-#define ipv4_file "../data/ipv4.json"
-#define ipv6_file "../data/ipv6.json"
 #define outfile "../data/out.json"
 
 using nlohmann::json;
@@ -96,8 +94,10 @@ int main(int argc, char* argv[]) {
             switch(proto) {
                 case IPv4_P:
                     packet_info.update(jsonify_ipv4(buf));
+                    break;
                 case IPv6_P:
                     packet_info.update(jsonify_ipv6(buf));
+                    break;
             }
 
             if (!packet_info.empty()){
