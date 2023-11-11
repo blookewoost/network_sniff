@@ -1,0 +1,8 @@
+# Ignore the .vscode directory
+.vscode/
+
+# Ignore the generated .json files
+data/*.json
+
+# And the binary
+_build/*.o
