@@ -1,4 +1,5 @@
 #include "lib.h"
+#include "../include/json/single_include/nlohmann/json.hpp"
 
 // Write the source and destination MAC addresses to file.
 void jsonify_mac(Packet packet, std::ofstream& writer, int packet_num){ // Need reference to the writer stream's buffer.
