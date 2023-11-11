@@ -25,7 +25,7 @@ void IPv6::Extract_IPv6_Header(uint_8 *buf) {
     char daddr[INET6_ADDRSTRLEN];
 
     // Implicit cast to std::string
-    IPv6::source_addr = inet_ntop(AF_INET6, &source_addr, saddr, INET6_ADDRSTRLEN);
-    IPv6::dest_addr = inet_ntop(AF_INET6, &dest_addr, daddr, INET6_ADDRSTRLEN);
+    IPv6::source_addr = inet_ntop(AF_INET6, &source_addr, saddr, sizeof(saddr));
+    IPv6::dest_addr = inet_ntop(AF_INET6, &dest_addr, daddr, sizeof(daddr));
 
 }

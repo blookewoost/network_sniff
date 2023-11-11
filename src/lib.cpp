@@ -54,8 +54,10 @@ MacPair stringify_mac(Packet packet) {
 
     std::string source_mac = sstream.str();
 
-    sstream.clear();
-    for (int i=1;i<sizeof(packet.dest_mac); i++) {
+    //sstream.clear(); This clearly doesn't do what I expected
+    sstream.str(""); // Reset the buffer
+
+    for (int i=1;i<=sizeof(packet.dest_mac); i++) {
         sstream << std::setfill('0') << std::setw(2) << std::hex << (int)packet.dest_mac[i-1];
         if (i<(sizeof(packet.dest_mac))) {
             sstream << ":";
