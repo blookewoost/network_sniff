@@ -6,10 +6,14 @@ json jsonify_eth(Packet packet, unsigned int packet_num) {
 
     MacPair macs = stringify_mac(packet);
 
+    std::stringstream proto_write;
+    proto_write << std::setfill('0') << std::setw(4) << std::hex << ntohs(packet.eth_proto);
+    std::string proto = proto_write.str();
+
     json j;
     j["idx"] = packet_num;
     j["eth"] = {
-        {"proto", packet.eth_proto},
+        {"proto", proto},
         {"source_mac", macs.source_mac},
         {"dest_mac", macs.dest_mac}
     };
