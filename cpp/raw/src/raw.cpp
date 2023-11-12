@@ -1,21 +1,11 @@
-#include <stdio.h>
-#include <iostream>
-#include <fstream>
-#include <stdlib.h>
 #include <sys/socket.h>
 #include <linux/if_ether.h>
-#include <linux/ip.h>
-#include <linux/ipv6.h>
-#include <arpa/inet.h>
-#include <errno.h>
-#include <cstdlib>
-#include <iomanip>
-#include <filesystem>
+#include <fstream>
+
 #include "lib.h"
 #include "defines.h"
-#include "../include/json/single_include/nlohmann/json.hpp"
 
-#define outfile "../data/out.json"
+#define outfile "../../../data/out.json"
 
 using nlohmann::json;
 

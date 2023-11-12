@@ -5,4 +5,4 @@
 data/*.json
 
 # And the binary
-_build/*.o
+cpp/raw/_build/*.o
