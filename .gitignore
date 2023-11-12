@@ -6,3 +6,6 @@ data/*.json
 
 # And the binary
 cpp/raw/_build/*.o
+
+# and the pycache
+python/__pycache__
