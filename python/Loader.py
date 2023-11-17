@@ -1,9 +1,9 @@
 import os
 import json
-from IPv6 import IPv6
-from IPv4 import IPv4
+from packet_tools.Packet import Packet
+from packet_tools.IPv4 import IPv4
+from packet_tools.IPv6 import IPv6
 
-from Packet import Packet
 
 class Loader:
     def __init__(self, _filepath):
