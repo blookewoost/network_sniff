@@ -1,5 +1,7 @@
 import os
 import json
+from IPv6 import IPv6
+from IPv4 import IPv4
 
 from Packet import Packet
 
@@ -15,10 +17,19 @@ class Loader:
         else:
             raise Exception("The filepath: {} does not exist.".format(file))
         
-    def collect_entries(self):
+    def sort_packets(self):
         self.packets = []
+        self.ipv4_packets = []
+        self.ipv6_packets = []
+
         for entry in self.raw:
-            self.packets.append(Packet(entry))
+            packet = Packet(entry)
+            match packet.eth_proto:
+                case IPv4.ETH_PROTO:
+                    self.ipv4_packets.append(IPv4(entry))
+                case IPv6.ETH_PROTO:
+                    self.ipv6_packets.append(IPv6(entry))
+
 
         self.total_packets = len(self.packets)
         ipv6_packet_num = 0

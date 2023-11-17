@@ -1,5 +1,7 @@
 import json
-
+'''
+Packet base class
+'''
 class Packet:
     def __init__(self, packet: dict):
         self.parse(packet)
