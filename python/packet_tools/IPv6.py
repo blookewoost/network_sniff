@@ -1,4 +1,4 @@
-from Packet import Packet
+from .Packet import Packet
 
 class IPv6(Packet):
     ETH_PROTO = 34525

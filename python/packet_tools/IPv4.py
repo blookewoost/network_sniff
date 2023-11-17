@@ -1,4 +1,4 @@
-from Packet import Packet
+from .Packet import Packet
 
 class IPv4(Packet):
     ETH_PROTO = 2048

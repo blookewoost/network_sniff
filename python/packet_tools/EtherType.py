@@ -15,10 +15,9 @@ class EtherType:
         self.description = type_data[4]
         print(self.description)
         
-
     # If the first entry contains a '-', the decimal ethertype is actually a range of values.
     def get_decimal_ethertype(self, decimal_info):
-        
+
         if '-' in decimal_info:
             values = decimal_info.split('-')
             self.decimal = range(int(values[0]), int(values[1]))

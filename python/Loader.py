@@ -3,6 +3,7 @@ import json
 from packet_tools.Packet import Packet
 from packet_tools.IPv4 import IPv4
 from packet_tools.IPv6 import IPv6
+from packet_tools.EtherTypes import EtherTypes
 
 
 class Loader:
@@ -16,6 +17,17 @@ class Loader:
                 self.raw = json.loads(data.read())
         else:
             raise Exception("The filepath: {} does not exist.".format(file))
+    
+    # Pull in the ethertypes database.   
+    def build_ethertypes(self):
+        eth_database = '../data/ieee-802-numbers.csv'
+        if os.path.exists(eth_database):
+            self.eth_types = EtherTypes(eth_database)
+
+    def sort(self):
+        for entry in self.raw:
+            packet = Packet(entry)
+            
         
     def sort_packets(self):
         self.packets = []
