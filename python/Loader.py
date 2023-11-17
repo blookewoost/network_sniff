@@ -8,7 +8,7 @@ from Packet import Packet
 class Loader:
     def __init__(self, _filepath):
         self.load(_filepath)
-        self.collect_entries()
+        self.sort_packets()
         
     def load(self, file):
         if os.path.exists(file):
