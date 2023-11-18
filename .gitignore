@@ -8,4 +8,4 @@ data/*.json
 cpp/raw/_build/*.o
 
 # and the pycache
-python/__pycache__
+__pycache__/
