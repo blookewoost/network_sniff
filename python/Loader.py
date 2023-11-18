@@ -9,7 +9,9 @@ from packet_tools.EtherTypes import EtherTypes
 class Loader:
     def __init__(self, _filepath):
         self.load(_filepath)
-        self.sort_packets()
+        self.build_ethertypes()
+        self.identify_packets()
+        self.basic_report()
         
     def load(self, file):
         if os.path.exists(file):
@@ -22,39 +24,44 @@ class Loader:
     def build_ethertypes(self):
         eth_database = '../data/ieee-802-numbers.csv'
         if os.path.exists(eth_database):
-            self.eth_types = EtherTypes(eth_database)
+            eth_types = EtherTypes(eth_database)
+            self.types = eth_types.types
 
-    def sort(self):
+    def identify_packets(self):
+        self.no_id = []
+        self.proto_counts = {}
+
         for entry in self.raw:
             packet = Packet(entry)
-            
+            proto = int(packet.eth_proto, 16)
+            if proto in self.types.keys():
+                packet.set_ether_description(self.types[proto])
+                if not(proto in self.proto_counts.keys()): # Is there a better way to do this? Seems a little hacky.
+                    self.proto_counts[proto] = 1
+                else:
+                    self.proto_counts[proto] += 1
+            else:
+                self.no_id.append(packet)
+
+
+    def basic_report(self):
+        total_packets = 0
+        total_packets += len(self.no_id)
+        for proto in self.proto_counts:
+            total_packets += self.proto_counts[proto]
+
+        print("A total of {} packets were parsed.".format(total_packets))
+
+        percent_no_id = (len(self.no_id)/total_packets)*100
+        print("{} percent of the packet capture was an unidentified protocol.".format(percent_no_id))
+        for proto in self.proto_counts:
+            description = self.types[proto]
+            percent = (self.proto_counts[proto]/total_packets)*100
+            print("{} percent of the packet capture was of type {}".format(percent, description))
+
         
-    def sort_packets(self):
-        self.packets = []
-        self.ipv4_packets = []
-        self.ipv6_packets = []
+        
 
-        for entry in self.raw:
-            packet = Packet(entry)
-            match packet.eth_proto:
-                case IPv4.ETH_PROTO:
-                    self.ipv4_packets.append(IPv4(entry))
-                case IPv6.ETH_PROTO:
-                    self.ipv6_packets.append(IPv6(entry))
-
-
-        self.total_packets = len(self.packets)
-        ipv6_packet_num = 0
-        ipv4_packet_num = 0
-            
-        for packet in self.packets:
-            if int(packet.eth_proto, 16) == 34525:
-                ipv6_packet_num += 1
-            elif int(packet.eth_proto, 16) == 2048:
-                ipv4_packet_num += 1
-
-        print("A total of {} ipv6 packets were analyzed, making up {} percent of the packet capture".format(ipv6_packet_num, (ipv6_packet_num/self.total_packets)*100))
-        print("A total of {} ipv4 packets were analyzed, making up {} percent of the packet capture".format(ipv4_packet_num, (ipv4_packet_num/self.total_packets)*100))
 
         
 

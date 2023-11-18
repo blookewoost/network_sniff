@@ -6,6 +6,9 @@ class Packet:
     def __init__(self, packet: dict):
         self.parse(packet)
 
+    def set_ether_description(self, description):
+        self.ether_description = description
+
     def parse(self, packet):
         if 'idx' in packet.keys():
             self.packet_id = packet['idx']

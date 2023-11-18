@@ -13,17 +13,26 @@ class EtherTypes:
         else:
             raise Exception("EtherTypes initialized with an invalid file: {}".format(database))
         
+        self.build_type_dict()
+        
     def parse(self):
         self.ether_types = []
         next(self.reader) # Skip the header line
         for row in self.reader:
-            self.types.append(EtherType(row))
+            self.ether_types.append(EtherType(row))
 
     '''
-    TODO Build a dictionary of all the types and their description
+    Build a dictionary of all the types and their description
     '''
     def build_type_dict(self):
         self.types = {}
         for type in self.ether_types:
             if isinstance(type.decimal, range):
-                print("Not implemented.")
+                for value in type.decimal:
+                    self.types.update({value: type.description})
+            elif isinstance(type.decimal, int):
+                self.types.update({type.decimal: type.description})
+            else: # Something quite unexpected happened
+                raise Exception("Encountered an invalid EtherType!")
+
+

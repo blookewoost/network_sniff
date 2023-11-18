@@ -13,7 +13,6 @@ class EtherType:
     def define(self, type_data: list):
         self.get_decimal_ethertype(type_data[0])
         self.description = type_data[4]
-        print(self.description)
         
     # If the first entry contains a '-', the decimal ethertype is actually a range of values.
     def get_decimal_ethertype(self, decimal_info):
