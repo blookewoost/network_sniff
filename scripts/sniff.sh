@@ -1,26 +1,30 @@
 #!/bin/bash
 
-script_dir="$(dirname "$(readlink -f "$0")")" # directory containing this file
+# Directory containing this file.
+script_dir="$(dirname "$(readlink -f "$0")")" 
 
+# Relative directories/files
 bin_dir="../cpp/raw/_build"
 bin_file="raw.o"
 py_dir="../python"
 data_dir="../data"
 data_file="out.json"
 
+# Complain to the user
 handle_invalid_args() {
     echo "Usage: ./sniff.sh <packet_num> <options>"
     echo "Valid options are --rebuild and --capture-only"
-    exit 0
+    exit 1
 }
 
-# Gross hack to make up for directory dependencies of the project.
+# Check directory and change directory if needed.
 check_dir() {
     if [ ! $(pwd) == script_dir ]; then
-        cd $script_dir
+        cd $script_dir || exit 1
     fi
 }
 
+# Check and remove data file if it exists.
 check_data_file() {
     check_dir
     if [ -e "$data_dir/$data_file" ]; then
@@ -28,11 +32,13 @@ check_data_file() {
     fi
 }
 
+# Build the binary
 rebuild() {
     check_dir
-    make -C $bin_dir
+    make -C $bin_dir || exit 1
 }
 
+# Run the packet capture. If no binary exists, build.
 run_capture() {
     check_dir
     check_data_file
@@ -45,16 +51,17 @@ run_capture() {
     sudo ./$bin_file $1
 }
 
+# Run python report.
 run_report() {
     check_dir
-    cd $py_dir
+    cd $py_dir || exit 1
     python3 run.py
 }
 
 # Check for command line arguments
 if [ "$#" -gt 0 ]; then
     if [[ "$1" =~ ^[0-9]+$ ]]; then # regexp will match on any valid integer
-        packet_num=$1
+        packet_num="$1"
     else
         handle_invalid_args
     fi
@@ -62,16 +69,16 @@ if [ "$#" -gt 0 ]; then
     if [ "$#" -gt 1 ]; then # One of the options was provided.
         if [ "$2" == "--rebuild"]; then
             rebuild
-            run_capture $packet_num
+            run_capture "$packet_num"
             run_report
             exit 0
         elif [ "$2" == "--capture-only" ]; then
-            run_capture $packet_num
+            run_capture "$packet_num"
             exit 0
         fi
     fi
 
-    run_capture $packet_num
+    run_capture "$packet_num"
     run_report
 else
     echo "No arguments were passed"
