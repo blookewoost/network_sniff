@@ -5,6 +5,8 @@ script_dir="$(dirname "$(readlink -f "$0")")" # directory containing this file
 bin_dir="../cpp/raw/_build"
 bin_file="raw.o"
 py_dir="../python"
+data_dir="../data"
+data_file="out.json"
 
 handle_invalid_args() {
     echo "Usage: ./sniff.sh <packet_num> <options>"
@@ -19,6 +21,13 @@ check_dir() {
     fi
 }
 
+check_data_file() {
+    check_dir
+    if [ -e "$data_dir/$data_file" ]; then
+        rm "$data_dir/$data_file"
+    fi
+}
+
 rebuild() {
     check_dir
     make -C $bin_dir
@@ -26,6 +35,7 @@ rebuild() {
 
 run_capture() {
     check_dir
+    check_data_file
     # Check if a binary exists. If not, build the sniffer.
     if [ ! -e "$bin_dir/$bin_file" ]; then
         rebuild
