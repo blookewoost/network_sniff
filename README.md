@@ -12,9 +12,9 @@ Where <packet_num> is the number of packets to read, and the valid options are -
 
 **We must run this program with 'sudo' because it creates a raw socket, which is a priveleged operation.**
 
-Running sniff.sh with valid arguments will automatically compile the program if no binary exists. \\
-Running with --rebuild will execute the makefile even if a binary already exists. \\
-Running with --capture-only will omit the report, and simply generate a file containing the packet capture. \\
+Running sniff.sh with valid arguments will automatically compile the program if no binary exists.  
+Running with --rebuild will execute the makefile even if a binary already exists.  
+Running with --capture-only will omit the report, and simply generate a file containing the packet capture.  
 
 **The program can only capture packets as fast as they hit your network adapter, which depends on your network traffic.**
 
