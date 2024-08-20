@@ -10,14 +10,13 @@ sudo ./sniff.sh <packet_num> <options>
 ```
 Where <packet_num> is the number of packets to read, and the valid options are --rebuild or --capture-only
 
-**NOTE: We must run this program with 'sudo' because it creates a raw socket, which is a priveleged operation.**
+**We must run this program with 'sudo' because it creates a raw socket, which is a priveleged operation.**
 
 Running sniff.sh with valid arguments will automatically compile the program if no binary exists.
 Running with --rebuild will execute the makefile even if a binary already exists.
 Running with --capture-only will omit the report, and simply generate a file containing the packet capture.
 
-# Note: 
-
+**The program can only capture packets as fast as they hit your network adapter, which depends on your network traffic.**
 
 ## Design
 The centerpiece of this project is a raw socket, implemented in C++. The raw socket will capture any packets visible to the listening adapter.
