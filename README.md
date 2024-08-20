@@ -8,7 +8,15 @@ To use this program, simply clone this repository and run
 sudo ./sniff.sh <packet_num> <options>
 
 ```
-Where <packet_num> is the number of packets to read, and <options> is either --rebuild or --capture-only
+Where <packet_num> is the number of packets to read, and the valid options are --rebuild or --capture-only
+
+**NOTE: We must run this program with 'sudo' because it creates a raw socket, which is a priveleged operation.**
+
+Running sniff.sh with valid arguments will automatically compile the program if no binary exists.
+Running with --rebuild will execute the makefile even if a binary already exists.
+Running with --capture-only will omit the report, and simply generate a file containing the packet capture.
+
+# Note: 
 
 
 ## Design
