@@ -4,10 +4,10 @@
 script_dir="$(dirname "$(readlink -f "$0")")" 
 
 # Relative directories/files
-bin_dir="../cpp/raw/_build"
+bin_dir="./cpp/raw/_build"
 bin_file="raw.o"
-py_dir="../python"
-data_dir="../data"
+py_dir="./python"
+data_dir="./data"
 data_file="out.json"
 
 # Complain to the user
@@ -67,7 +67,7 @@ if [ "$#" -gt 0 ]; then
     fi
 
     if [ "$#" -gt 1 ]; then # One of the options was provided.
-        if [ "$2" == "--rebuild"]; then
+        if [ "$2" == "--rebuild" ]; then
             rebuild
             run_capture "$packet_num"
             run_report
@@ -75,6 +75,9 @@ if [ "$#" -gt 0 ]; then
         elif [ "$2" == "--capture-only" ]; then
             run_capture "$packet_num"
             exit 0
+        else
+            echo -e "$2 is not a valid argument"
+            handle_invalid_args
         fi
     fi
 
