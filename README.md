@@ -1,6 +1,16 @@
 ## network_sniff
 This project is a simple network analyzer. It does not rely on any networking libraries, and uses only the C socket API. 
 
+## Usage
+To use this program, simply clone this repository and run
+
+```bash
+sudo ./sniff.sh <packet_num> <options>
+
+```
+Where <packet_num> is the number of packets to read, and <options> is either --rebuild or --capture-only
+
+
 ## Design
 The centerpiece of this project is a raw socket, implemented in C++. The raw socket will capture any packets visible to the listening adapter.
 Once captured, the identifying packet data (like MAC and IP addresses, ethernet protocols, etc) are written to a file. This gives us a snapshot of our network traffic.
